@@ -19,6 +19,18 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+const resumeRoutes = require('./routes/resumeRoutes');
+app.use('/api/resume', resumeRoutes);
+
+
+/* const requireAuth = require('./middleware/requireAuth');
+app.get('/api/protected-test', requireAuth, (req, res)=> {
+    res.json({ message: `Hello user ${req.user.id}, you are authenticated` });
+}); */
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
