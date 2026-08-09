@@ -25,6 +25,9 @@ app.use('/api/auth', authRoutes);
 const resumeRoutes = require('./routes/resumeRoutes');
 app.use('/api/resume', resumeRoutes);
 
+const portfolioRoutes = require('./routes/portfolioRoutes');
+app.use('/api/portfolio', portfolioRoutes);
+
 
 /* const requireAuth = require('./middleware/requireAuth');
 app.get('/api/protected-test', requireAuth, (req, res)=> {

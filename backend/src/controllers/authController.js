@@ -84,5 +84,33 @@ async function getMe(req, res) {
     }
 }
 
+async function setUsername(req, res){
+   
+  try {
+    const { username } = req.body;
+    
+    if(!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
+        return res.status(400).json({
+            error: 'Username must be 3-30 characters: lowercase letters, numbers, hyphens only',
+        });
+    }
 
-module.exports = { signup, login, getMe };
+    const taken = await User.findOne({ username, _id: { $ne: req.user.id }});
+    if(taken) {
+        return res.status(409).json({ error: 'That username is already taken' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { username },
+        { new: true }
+    ).select('-passwordHash');
+
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+}
+
+
+module.exports = { signup, login, getMe, setUsername };

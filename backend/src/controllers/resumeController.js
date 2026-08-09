@@ -1,6 +1,6 @@
-const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Resume = require('../models/Resume');
+const User = require('../models/Users');
 const { parseResumeWithAI } = require('../services/llmService');
 
 /* async function extractText(file){
@@ -112,4 +112,25 @@ async function updateResume(req, res) {
     }
 }
 
-module.exports = { uploadResume, parseResume, getResume, updateResume };
+async function togglePublish(req, res) {
+    try {
+        const resume = await Resume.findOne({ _id: req.params.id, userId: req.user.id });
+        if(!resume) {
+            return res.status(404).json({ error: 'Resume not found' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if(!user.username){
+            return res.status(400).json({ error: 'Set a username before publishing your portfolio' });
+        }
+
+        resume.isPublished = !resume.isPublished;
+        await resume.save();
+
+        res.json({ isPublished: resume.isPublished });
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong'  });
+    }
+}
+
+module.exports = { uploadResume, parseResume, getResume, updateResume, togglePublish };
