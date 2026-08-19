@@ -2,6 +2,8 @@ const mammoth = require('mammoth');
 const Resume = require('../models/Resume');
 const User = require('../models/Users');
 const { parseResumeWithAI } = require('../services/llmService');
+const { PDFParse } = require('pdf-parse');
+const cloudinary = require('../config/cloudinary');
 
 /* async function extractText(file){
     if(file.mimetype === 'application/pdf') {
@@ -15,7 +17,6 @@ const { parseResumeWithAI } = require('../services/llmService');
 
 async function extractText(file) {
   if (file.mimetype === 'application/pdf') {
-    const { PDFParse } = require('pdf-parse');
     const parser = new PDFParse({ data: file.buffer });
     const result = await parser.getText();
     return result.text;
@@ -133,4 +134,33 @@ async function togglePublish(req, res) {
     }
 }
 
-module.exports = { uploadResume, parseResume, getResume, updateResume, togglePublish };
+
+async function uploadProfileImage(req, res) {
+      try{
+        if(!req.file) {
+            return res.status(400).json({ error: 'No image uploaded' });
+        }
+
+        const resume = await Resume.findOne({ _id: req.params.id, userId: req.user.id });
+        if(!resume) {
+            return res.status(404).json({ error: 'Resume not found' });
+        }
+
+        const base64 = req.file.buffer.toString('base64');
+        const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+        
+        const result = await cloudinary.uploader.upload(dataUri, {
+            folder: 'resume-portfolios',
+            transformation: [{ width: 500, height: 500, crop: 'fill', gravity: 'face' }],
+        });
+
+        resume.profileImageUrl = result.secure_url;
+        await resume.save();
+
+        res.status(200).json({ profileImageUrl: resume.profileImageUrl });
+      }catch (err){
+        res.status(500).json({ error: 'Failed to upload image' });
+      }
+}
+
+module.exports = { uploadResume, parseResume, getResume, updateResume, togglePublish, uploadProfileImage };

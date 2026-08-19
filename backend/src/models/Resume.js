@@ -13,6 +13,10 @@ const resumeSchema = new mongoose.Schema({
         type: Object,
         default: {},
     },
+    profileImageUrl: {
+        type: String,
+        default: null,
+    },
     theme: {
         type: String,
         default: 'default',

@@ -18,6 +18,7 @@ async function getPublicPortfolio(req, res){
         res.json({
             username: user.username,
             parsedData: resume.parsedData,
+            profileImageUrl: resume.profileImageUrl,
             theme: resume.theme,
         });
     } catch (err) {
