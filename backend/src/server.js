@@ -23,7 +23,7 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
 const resumeRoutes = require('./routes/resumeRoutes');
-app.use('/api/resume', resumeRoutes);
+app.use('/api/resumes', resumeRoutes);
 
 const portfolioRoutes = require('./routes/portfolioRoutes');
 app.use('/api/portfolio', portfolioRoutes);

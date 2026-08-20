@@ -4,7 +4,7 @@ const { signup, login, getMe, setUsername } = require('../controllers/authContro
 const requireAuth = require('../middleware/requireAuth');
 
 router.post('/signup', signup);
-router.get('/login', login);
+router.post('/login', login);
 router.get('/me', requireAuth, getMe);
 router.put('/username', requireAuth, setUsername);
 
