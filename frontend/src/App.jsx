@@ -1,23 +1,64 @@
-import { useEffect, useState } from 'react';
-import api from './api/client';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import ReviewEdit from './pages/ReviewEdit';
+import ThemePicker from './pages/ThemePicker';
+import Publish from './pages/Publish';
+import PublicPortfolio from './pages/PublicPortfolio';
+import NotFound from './pages/NotFound';
 
-function App() {
-  const [status, setStatus] = useState('checking...');
-
-  useEffect(() => {
-    api.get('/health')
-    .then((res)=> setStatus(res.data.message))
-    .catch(() => setStatus('Could not reach backend'));
-  }, []);
-
-
+export default function App() {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Resume to Portfolio</h1>
-      <p>Backend status: {status}</p>
-    </div>
+    <AuthProvider>
+      <Routes>
+        {/* Public auth routes */}
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected app routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resumes/:id/review"
+          element={
+            <ProtectedRoute>
+              <ReviewEdit />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resumes/:id/theme"
+          element={
+            <ProtectedRoute>
+              <ThemePicker />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resumes/:id/publish"
+          element={
+            <ProtectedRoute>
+              <Publish />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Public portfolio — no auth */}
+        <Route path="/u/:username" element={<PublicPortfolio />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AuthProvider>
   );
 }
-
-export default App;
