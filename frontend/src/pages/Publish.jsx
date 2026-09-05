@@ -22,7 +22,7 @@ export default function Publish() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await api.get(`/resume/${id}`);
+        const res = await api.get(`/resumes/${id}`);
         if (cancelled) return;
         setIsPublished(res.data.resume.isPublished);
       } catch (err) {
@@ -41,7 +41,7 @@ export default function Publish() {
     setError('');
     setIsToggling(true);
     try {
-      const res = await api.patch(`/resume/${id}/publish`);
+      const res = await api.patch(`/resumes/${id}/publish`);
       setIsPublished(res.data.isPublished);
       setNeedsUsername(false);
     } catch (err) {

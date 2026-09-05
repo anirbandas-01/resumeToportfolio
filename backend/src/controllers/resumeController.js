@@ -5,15 +5,6 @@ const { parseResumeWithAI } = require('../services/llmService');
 const { PDFParse } = require('pdf-parse');
 const cloudinary = require('../config/cloudinary');
 
-/* async function extractText(file){
-    if(file.mimetype === 'application/pdf') {
-        const data = await pdfParse(file.buffer);
-        return data.text;
-    } else {
-        const result = await mammoth.extractRawText({ buffer: file.buffer });
-        return result.value;
-    }
-} */
 
 async function extractText(file) {
   if (file.mimetype === 'application/pdf') {
@@ -149,8 +140,12 @@ async function uploadProfileImage(req, res) {
         const base64 = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
         
+        console.log('Cloud:', process.env.CLOUDINARY_CLOUD_NAME);
+        console.log('Key:', process.env.CLOUDINARY_API_KEY);
+        console.log('Secret length:', process.env.CLOUDINARY_API_SECRET?.length);
+
         const result = await cloudinary.uploader.upload(dataUri, {
-            folder: 'resume-portfolios',
+            folder: 'resumeToportfolio',
             transformation: [{ width: 500, height: 500, crop: 'fill', gravity: 'face' }],
         });
 
@@ -159,6 +154,7 @@ async function uploadProfileImage(req, res) {
 
         res.status(200).json({ profileImageUrl: resume.profileImageUrl });
       }catch (err){
+        console.error('Image upload error:', err);
         res.status(500).json({ error: 'Failed to upload image' });
       }
 }

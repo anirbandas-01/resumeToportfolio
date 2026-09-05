@@ -38,7 +38,7 @@ export default function ThemePicker() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await api.get(`/resume/${id}`);
+        const res = await api.get(`/resumes/${id}`);
         if (cancelled) return;
         setSelectedTheme(res.data.resume.theme || 'default');
       } catch (err) {
@@ -57,7 +57,7 @@ export default function ThemePicker() {
     setIsSaving(true);
     setError('');
     try {
-      await api.put(`/resume/${id}`, { theme: selectedTheme });
+      await api.put(`/resumes/${id}`, { theme: selectedTheme });
       navigate(`/resumes/${id}/publish`);
     } catch (err) {
       setError(err.response?.data?.error || 'Could not save your theme.');

@@ -41,7 +41,7 @@ export default function ReviewEdit() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await api.get(`/resume/${id}`);
+        const res = await api.get(`/resumes/${id}`);
         if (cancelled) return;
         const resume = res.data.resume;
         setData({ ...EMPTY_PARSED_DATA, ...(resume.parsedData || {}) });
@@ -92,7 +92,7 @@ export default function ReviewEdit() {
     setError('');
     setSaveMessage('');
     try {
-      await api.put(`/resume/${id}`, { parsedData: data });
+      await api.put(`/resumes/${id}`, { parsedData: data });
       setSaveMessage('Saved.');
       setTimeout(() => setSaveMessage(''), 2000);
     } catch (err) {
@@ -125,7 +125,7 @@ export default function ReviewEdit() {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const res = await api.post(`/resume/${id}/image`, formData, {
+      const res = await api.post(`/resumes/${id}/image`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setProfileImageUrl(res.data.profileImageUrl);

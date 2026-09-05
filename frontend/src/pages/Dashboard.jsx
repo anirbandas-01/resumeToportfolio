@@ -61,14 +61,14 @@ export default function Dashboard() {
       const formData = new FormData();
       formData.append('resume', selectedFile);
 
-      const uploadRes = await api.post('/resume/upload', formData, {
+      const uploadRes = await api.post('/resumes/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       const { resumeId } = uploadRes.data;
 
       setStage('parsing');
       setParseMessageIndex(0);
-      const parseRes = await api.post(`/resume/${resumeId}/parse`);
+      const parseRes = await api.post(`/resumes/${resumeId}/parse`);
 
       // Whether parsing succeeded or the AI failed, move on to the review
       // screen — on failure it just opens with an empty, editable form.
