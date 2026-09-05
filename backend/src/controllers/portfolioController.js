@@ -9,7 +9,7 @@ async function getPublicPortfolio(req, res){
             return res.status(404).json({ error: 'Portfolio not found' });
         }
 
-        const resume = await Resume.findOne({ userId: user._id, isPublished: true });
+        const resume = await Resume.findOne({ userId: user._id, isPublished: true }).sort({ updatedAt: -1 });
 
         if(!resume) {
             return res.status(404).json({ error: 'This portfolio is not published yet' });
