@@ -28,6 +28,8 @@ async function uploadResume(req, res){
         if(!rawText || rawText.trim().length < 20) {
             return res.status(422).json({ error: 'Could not read readable text from this file' });
         }
+        
+        await Resume.deleteMany({ userId: req.user.id });
 
         const resume = await Resume.create({ 
             userId: req.user.id,
@@ -82,7 +84,15 @@ async function getResume(req, res){
         res.status(500).json({ error: 'Something went wrong' });
     }
 }
-
+ 
+async function getMyResume(req, res) {
+    try {
+        const resume = await Resume.findOne({ userId: req.user.id }).sort({ updatedAt: -1 });
+        res.json({ resume: resume || null });
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+}
 
 async function updateResume(req, res) {
     try {
@@ -140,10 +150,6 @@ async function uploadProfileImage(req, res) {
         const base64 = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
         
-        console.log('Cloud:', process.env.CLOUDINARY_CLOUD_NAME);
-        console.log('Key:', process.env.CLOUDINARY_API_KEY);
-        console.log('Secret length:', process.env.CLOUDINARY_API_SECRET?.length);
-
         const result = await cloudinary.uploader.upload(dataUri, {
             folder: 'resumeToportfolio',
             transformation: [{ width: 500, height: 500, crop: 'fill', gravity: 'face' }],
@@ -159,4 +165,4 @@ async function uploadProfileImage(req, res) {
       }
 }
 
-module.exports = { uploadResume, parseResume, getResume, updateResume, togglePublish, uploadProfileImage };
+module.exports = { uploadResume, parseResume, getResume, getMyResume, updateResume, togglePublish, uploadProfileImage };
