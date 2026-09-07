@@ -112,5 +112,35 @@ async function setUsername(req, res){
   }
 }
 
+async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
 
-module.exports = { signup, login, getMe, setUsername };
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+}
+
+
+module.exports = { signup, login, getMe, setUsername, changePassword };

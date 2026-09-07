@@ -143,6 +143,12 @@ export default function Dashboard() {
           <span className="font-semibold text-slate-900">Resume → Portfolio</span>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-500">{user?.email}</span>
+            <Link
+              to="/settings"
+              className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
+            >
+              Settings
+            </Link>
             <button
               onClick={logout}
               className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
