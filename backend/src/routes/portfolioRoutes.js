@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getPublicPortfolio } = require('../controllers/portfolioController');
+const { getPublicPortfolio, listPortfolios, toggleLike } = require('../controllers/portfolioController');
+const requireAuth = require('../middleware/requireAuth');
+const optionalAuth = require('../middleware/optionalAuth');
 
-router.get('/:username', getPublicPortfolio);
+
+router.get('/', optionalAuth, listPortfolios);
+router.get('/:username', optionalAuth, getPublicPortfolio);
+router.post('/:username/like', requireAuth, toggleLike);
 
 module.exports = router;

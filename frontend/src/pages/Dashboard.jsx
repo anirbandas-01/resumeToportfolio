@@ -34,6 +34,11 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [isTogglingPublish, setIsTogglingPublish] = useState(false);
 
+  // Discovery feed of other published portfolios.
+  const [discovery, setDiscovery] = useState([]);
+  const [isLoadingDiscovery, setIsLoadingDiscovery] = useState(true);
+  const [likingUsername, setLikingUsername] = useState(null);
+
   const isBusy = stage === 'uploading' || stage === 'parsing';
 
   useEffect(() => {
@@ -68,6 +73,42 @@ export default function Dashboard() {
     }, 2000);
     return () => clearInterval(interval);
   }, [stage]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get('/portfolio')
+      .then((res) => {
+        if (!cancelled) setDiscovery(res.data.portfolios);
+      })
+      .catch(() => {
+        // Non-critical section — fail silently, just leave the feed empty.
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingDiscovery(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleDiscoveryLike(username) {
+    setLikingUsername(username);
+    try {
+      const res = await api.post(`/portfolio/${username}/like`);
+      setDiscovery((prev) =>
+        prev.map((p) =>
+          p.username === username
+            ? { ...p, isLikedByMe: res.data.liked, likeCount: res.data.likeCount }
+            : p
+        )
+      );
+    } catch (err) {
+      // Ignore — e.g. session expired mid-click.
+    } finally {
+      setLikingUsername(null);
+    }
+  }
 
   function handleFileChange(e) {
     const file = e.target.files?.[0];
@@ -198,6 +239,17 @@ export default function Dashboard() {
                     Theme: {THEME_NAMES[resume.theme] || resume.theme}
                   </span>
                 </div>
+                {resume.isPublished && (
+                  <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <span>♥</span>
+                      <span>{resume.likedBy?.length || 0} likes</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span>{resume.viewCount || 0} views</span>
+                    </span>
+                  </div>
+                )}
               </div>
               {resume.profileImageUrl && (
                 <img
@@ -365,6 +417,66 @@ export default function Dashboard() {
               )}
             </div>
           </>
+        )}
+
+        {/* Discovery feed — other users' published portfolios */}
+        {view !== 'loading' && (
+          <section className="mt-12">
+            <h2 className="text-sm font-semibold text-slate-900 mb-4">
+              Portfolios from the community
+            </h2>
+
+            {isLoadingDiscovery ? (
+              <p className="text-sm text-slate-400">Loading...</p>
+            ) : discovery.length === 0 ? (
+              <p className="text-sm text-slate-400">
+                No published portfolios to show yet — be the first!
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {discovery.map((p) => (
+                  <div
+                    key={p.username}
+                    className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3"
+                  >
+                    <div className="h-12 w-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
+                      {p.profileImageUrl ? (
+                        <img
+                          src={p.profileImageUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        p.name?.[0]?.toUpperCase() || '?'
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to={`/u/${p.username}`}
+                        className="text-sm font-medium text-slate-900 hover:text-indigo-600 truncate block"
+                      >
+                        {p.name}
+                      </Link>
+                      <span className="text-xs text-slate-400">@{p.username}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDiscoveryLike(p.username)}
+                      disabled={likingUsername === p.username}
+                      className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border flex-shrink-0 transition-colors disabled:opacity-50 ${
+                        p.isLikedByMe
+                          ? 'bg-indigo-600 text-white border-transparent'
+                          : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <span>{p.isLikedByMe ? '♥' : '♡'}</span>
+                      <span>{p.likeCount}</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         )}
       </main>
     </div>

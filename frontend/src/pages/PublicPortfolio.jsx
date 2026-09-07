@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 // Theme styling — ids must match ThemePicker.jsx's THEMES list.
 const THEME_STYLES = {
@@ -35,10 +36,12 @@ const THEME_STYLES = {
 
 export default function PublicPortfolio() {
   const { username } = useParams();
+  const { isAuthenticated } = useAuth();
 
   const [portfolio, setPortfolio] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +60,23 @@ export default function PublicPortfolio() {
       cancelled = true;
     };
   }, [username]);
+
+  async function handleLikeToggle() {
+    if (!isAuthenticated || isLiking) return;
+    setIsLiking(true);
+    try {
+      const res = await api.post(`/portfolio/${username}/like`);
+      setPortfolio((prev) => ({
+        ...prev,
+        isLikedByMe: res.data.liked,
+        likeCount: res.data.likeCount,
+      }));
+    } catch (err) {
+      // Silently ignore — e.g. trying to like your own portfolio.
+    } finally {
+      setIsLiking(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -77,7 +97,8 @@ export default function PublicPortfolio() {
     );
   }
 
-  const { parsedData, profileImageUrl, theme } = portfolio;
+  const { parsedData, profileImageUrl, theme, likeCount, viewCount, isLikedByMe, isOwner } =
+    portfolio;
   const t = THEME_STYLES[theme] || THEME_STYLES.default;
   const data = parsedData || {};
 
@@ -102,6 +123,34 @@ export default function PublicPortfolio() {
           {data.summary && (
             <p className={`mt-4 max-w-lg text-sm leading-relaxed ${t.subtle}`}>{data.summary}</p>
           )}
+
+          <div className="flex items-center gap-4 mt-5">
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={handleLikeToggle}
+                disabled={!isAuthenticated || isLiking}
+                title={!isAuthenticated ? 'Log in to like this portfolio' : undefined}
+                className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isLikedByMe
+                    ? `${t.accentBg} text-white border-transparent`
+                    : `${t.border} ${t.subtle} hover:border-current`
+                }`}
+              >
+                <span>{isLikedByMe ? '♥' : '♡'}</span>
+                <span>{likeCount}</span>
+              </button>
+            )}
+            {isOwner && (
+              <span className={`flex items-center gap-1.5 text-sm ${t.subtle}`}>
+                <span>♥</span>
+                <span>{likeCount}</span>
+              </span>
+            )}
+            <span className={`text-xs ${t.subtle}`}>
+              {viewCount} {viewCount === 1 ? 'view' : 'views'}
+            </span>
+          </div>
         </div>
 
         {/* Skills */}

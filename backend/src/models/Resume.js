@@ -25,6 +25,14 @@ const resumeSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    viewCount: {
+        type: Number,
+        default: 0,
+    },
+    likeBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);
