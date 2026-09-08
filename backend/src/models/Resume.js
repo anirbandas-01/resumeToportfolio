@@ -29,9 +29,9 @@ const resumeSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    likeBy: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+    likedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     }],
 }, { timestamps: true });
 
