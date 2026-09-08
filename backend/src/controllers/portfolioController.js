@@ -35,6 +35,7 @@ async function getPublicPortfolio(req, res){
             isOwner,
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Something went wrong' });
     }
 }
@@ -73,6 +74,7 @@ async function listPortfolios(req, res) {
 
         res.json({ portfolios, page });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Something went wrong' });
     }
 }
@@ -104,6 +106,7 @@ async function toggleLike(req, res) {
 
         res.json({ liked: !alreadyLiked, likeCount: resume.likedBy.length });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Something went wrong' });
     }
 }
